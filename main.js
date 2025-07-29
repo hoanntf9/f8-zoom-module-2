@@ -51,7 +51,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Close modal when clicking overlay (outside modal container)
   authModal.addEventListener("click", function (e) {
-    console.log("authModal");
     if (e.target === authModal) {
       closeModal();
     }
@@ -114,4 +113,249 @@ document.addEventListener("DOMContentLoaded", function () {
 // Other functionality
 document.addEventListener("DOMContentLoaded", function () {
   // TODO: Implement other functionality here
+  // Player Start
+  player.start();
 });
+
+const player = {
+  NEXT: 1,
+  PREV: -1,
+  PREV_THROTTLE: 2,
+  _tracklistElement: document.querySelector(".track-list"),
+  _togglePlayElement: document.querySelector(".btn-toggle-play"),
+  _audioElement: document.querySelector(".audio"),
+  _artistNameElement: document.querySelector(".artist-name"),
+  _monthlyListenersElement: document.querySelector(".monthly-listeners"),
+  _heroImageElement: document.querySelector(".hero-image"),
+  _playIconElement: document.querySelector(".play-icon"),
+  _progressElement: document.querySelector(".progress-bar"),
+  _timeStartElement: document.querySelector(".time-start"),
+  _timeEndElement: document.querySelector(".time-end"),
+  _prevElement: document.querySelector(".btn-prev"),
+  _nextElement: document.querySelector(".btn-next"),
+  _songs: [
+    {
+      id: 1,
+      path: "./songs/tuyet_yeu_thuong.mp3",
+      name: "Tuyết yêu thương",
+      singer: "Mochi",
+      img: "./img/picture01.jpg",
+      views: "27,498,341",
+      isPlaying: true,
+      img: "./img/banner01.jpg",
+      time: "04:16",
+    },
+    {
+      id: 2,
+      path: "./songs/mat_ket_noi.mp3",
+      name: "Mất kết nối",
+      singer: "Dương Domic",
+      img: "./img/picture02.jpg",
+      views: "28,498,341",
+      isPlaying: false,
+      img: "./img/banner02.jpg",
+      time: "03:27",
+    },
+    {
+      id: 3,
+      path: "./songs/tran_bo_nho.mp3",
+      name: "Tràn Bộ Nhớ",
+      singer: "Dương Domic",
+      img: "./img/picture03.jpg",
+      views: "29,498,341",
+      isPlaying: false,
+      img: "./img/banner03.jpg",
+      time: "03:28",
+    },
+  ],
+  _currentIndex: 0,
+  _isPlaying: false,
+  start() {
+    this._render();
+    this._handlePlayback();
+
+    // DOM events
+    this._togglePlayElement.onclick = this._togglePlay.bind(this);
+
+    this._audioElement.onplay = () => {
+      this._playIconElement.classList.remove("fa-play");
+      this._playIconElement.classList.add("fa-pause");
+      this._isPlaying = true;
+
+      this._render();
+    };
+
+    this._audioElement.onpause = () => {
+      this._playIconElement.classList.remove("fa-pause");
+      this._playIconElement.classList.add("fa-play");
+      this._isPlaying = false;
+
+      this._render();
+    };
+
+    this._prevElement.onclick = this._handleControl.bind(this, this.PREV);
+    this._nextElement.onclick = this._handleControl.bind(this, this.NEXT);
+
+    this._audioElement.ontimeupdate = () => {
+      // Kiểm tra người dùng có đang tua (seek) video hay không!
+      if (this._progressElement.seeking) {
+        return;
+      }
+
+      // Lấy thời gian hiện tại của bài hát đang phát được tính bằng (s)
+      const currentTime = this._audioElement.currentTime;
+
+      // Lấy tổng thời lượng của bài hát tính bằng (s)
+      const duration = this._audioElement.duration;
+
+      // Tính phần trăm bài hát đã phát xong (%)
+      const progress = (currentTime / duration) * 100;
+
+      // Cập nhật giá trị vào thanh tiến trình
+      this._progressElement.value = progress || 0;
+
+      // Update start time khi phát nhạc
+      this._timeStartElement.textContent = this._formatTime(currentTime);
+
+      // Cập nhật màu vào thanh tiến trình
+      this._updateProgressBarColor(progress || 0);
+    };
+
+    // Khi kéo thanh progress (liên tục cập nhật màu)
+    this._progressElement.addEventListener("input", () => {
+      const nextStep = +this._progressElement.value;
+      this._updateProgressBarColor(nextStep);
+    });
+
+    this._progressElement.onmousedown = () => {
+      this._progressElement.seeking = true;
+    };
+
+    this._progressElement.onmouseup = () => {
+      const nextStep = +this._progressElement.value;
+
+      this._audioElement.currentTime =
+        (this._audioElement.duration / 100) * nextStep;
+
+      this._progressElement.seeking = false;
+    };
+  },
+  _formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  },
+  _handleControl(step) {
+    this._isPlaying = true;
+
+    const shouldReset = this._audioElement.currentTime > this.PREV_THROTTLE;
+
+    if (step === this.PREV && shouldReset) {
+      this._audioElement.currentTime = 0;
+      return;
+    }
+
+    this._currentIndex += step;
+    this._handleForNewIndex();
+  },
+  _handleForNewIndex() {
+    this._currentIndex =
+      (this._currentIndex + this._songs.length) % this._songs.length;
+    this._handlePlayback();
+    this._render();
+  },
+  _escapeHtml(str) {
+    const map = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#x27;",
+      "/": "&#x2F;",
+    };
+    return String(str).replace(/[&<>"'\/]/g, (char) => map[char]);
+  },
+  _updateProgressBarColor(value) {
+    const progress = Math.min(100, Math.max(0, Number(value.toFixed(2)))) + 0.5;
+
+    this._progressElement.style.background = `linear-gradient(to right, var(--accent-primary) 0%, var(--accent-primary) ${progress}%, #ccc ${progress}%, #ccc 100%)`;
+  },
+  _getCurrentSong() {
+    return this._songs[this._currentIndex];
+  },
+  _togglePlay() {
+    // Khi click vào nút play thì toggle song
+    if (this._audioElement.paused) {
+      this._audioElement.play();
+    } else {
+      this._audioElement.pause();
+    }
+  },
+  _handlePlayback() {
+    const currentSong = this._getCurrentSong(this._currentIndex);
+    this._artistNameElement.textContent = currentSong.name;
+    this._monthlyListenersElement = currentSong.views;
+    this._heroImageElement.src = currentSong.img;
+
+    this._audioElement.src = currentSong.path;
+
+    // oncanplay
+    this._audioElement.oncanplay = () => {
+      if (this._isPlaying) {
+        this._audioElement.play();
+      }
+
+      // Hiển thị thời gian kết thúc bằng thời lượng bài hát đã cho trước
+      this._timeEndElement.textContent = this._formatTime(
+        this._audioElement.duration || 0
+      );
+    };
+  },
+  _render() {
+    const html = this._songs
+      .map((song, index) => {
+        const isCurrentSongPlaying =
+          index === this._currentIndex && this._isPlaying;
+        return `
+        <div class="track-item ${isCurrentSongPlaying ? "playing" : ""}">
+          <div class="track-number">${
+            isCurrentSongPlaying
+              ? `<div class="equalizer">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              `
+              : index + 1
+          }</div>
+
+          <div class="track-image">
+            <img
+              src=${this._escapeHtml(song.img)}
+              alt="${this._escapeHtml(song.name)}"
+              width="40"
+              height="40"
+            />
+          </div>
+
+          <div class="track-info">
+            <div class="track-name ${
+              isCurrentSongPlaying ? "active" : ""
+            }">${this._escapeHtml(song.name)}</div>
+            <div class="track-singer">${this._escapeHtml(song.singer)}</div>
+          </div>
+
+          <div class="track-duration">${this._escapeHtml(song.time)}</div>
+
+          <button class="track-menu-btn">
+            <i class="fas fa-ellipsis-h"></i>
+          </button>
+        </div>
+      `;
+      })
+      .join("");
+
+    this._tracklistElement.innerHTML = html;
+  },
+};

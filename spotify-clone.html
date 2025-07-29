@@ -295,27 +295,46 @@
             <button class="control-btn active">
               <i class="fas fa-random"></i>
             </button>
-            <button class="control-btn">
+
+            <button class="control-btn btn-prev">
               <i class="fas fa-step-backward"></i>
             </button>
-            <button class="control-btn play-btn">
-              <i class="fas fa-pause"></i>
+
+            <button class="control-btn btn-toggle-play">
+              <i class="fas fa-play play-icon"></i>
             </button>
-            <button class="control-btn">
+            <button class="control-btn btn-next">
               <i class="fas fa-step-forward"></i>
             </button>
             <button class="control-btn">
               <i class="fas fa-redo"></i>
             </button>
           </div>
+
+          <!-- Time -->
           <div class="progress-container">
-            <span class="time">0:52</span>
-            <div class="progress-bar">
+            <span class="time time-start">00:00</span>
+            <!-- <div class="progress-bar">
               <div class="progress-fill" style="width: 20%"></div>
               <div class="progress-handle"></div>
-            </div>
-            <span class="time">4:59</span>
+            </div> -->
+
+            <!-- Xử lý progress ở đây.... -->
+            <input
+              type="range"
+              id="progress"
+              class="progress-bar"
+              value="0"
+              step="1"
+              min="0"
+              max="100"
+            />
+
+            <span class="time time-end">4:59</span>
           </div>
+
+          <!-- Audio -->
+          <audio src="" id="audio" class="audio"></audio>
         </div>
 
         <div class="player-right">

@@ -480,6 +480,47 @@
   font-weight: 400;
 }
 
+.equalizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 20px;
+  height: 18px;
+}
+
+.equalizer span {
+  display: block;
+  width: 3px;
+  background: #1db954;
+  animation: bounce 0.65s infinite ease-in-out;
+}
+
+.equalizer span:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.equalizer span:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.equalizer span:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    height: 4px;
+  }
+  25% {
+    height: 10px;
+  }
+  50% {
+    height: 18px;
+  }
+  75% {
+    height: 12px;
+  }
+}
+
 .playing-icon {
   color: var(--accent-primary);
   font-size: 14px;
@@ -503,6 +544,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.track-name.active {
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+.track-singer {
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #b3b3b3;
+  font-weight: 500;
 }
 
 .track-name.playing-text {
@@ -591,6 +644,11 @@
   transform: translateX(-50%);
 }
 
+.control-btn.btn-toggle-play {
+  background-color: #fff;
+  color: #000;
+}
+
 .play-btn {
   width: 32px;
   height: 32px;
@@ -622,6 +680,29 @@
 .progress-bar:hover,
 .volume-bar:hover {
   height: 6px;
+}
+
+input[type="range"].progress-bar {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #ccc;
+  outline: none;
+}
+
+input[type="range"].progress-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s;
+}
+
+input[type="range"].progress-bar::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
 }
 
 .progress-fill,
